@@ -1,5 +1,6 @@
 const express = require('express');
 const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 const _USERS = require('./users.json');
 
 const app = express();
@@ -31,6 +32,24 @@ const User = connection.define('User', {
     }
 });
 
+app.get('/findall', (req, res) => {
+    User.findAll({
+        where: {
+            name: {
+                [Op.like]: 'P%'
+            }
+        }
+    }).then(user => {
+        res.json(user);
+    })
+    .catch(error => {
+        console.log('Error caught', error);
+        res.status(404).send(error);
+    });
+});
+
+
+
 app.post('/post',(req, res) => {
     const newUser = req.body.user;
     User.create({
@@ -51,15 +70,15 @@ connection
         // logging: console.log,
         // force: true
     })
-    .then(() => {
-        User.bulkCreate(_USERS)
-            .then(users => {
-                console.log('Successfully added users.')
-            })
-            .catch(err => {
-                console.log(err);
-            });
-    })
+    // .then(() => {
+    //     User.bulkCreate(_USERS)
+    //         .then(users => {
+    //             console.log('Successfully added users.')
+    //         })
+    //         .catch(err => {
+    //             console.log(err);
+    //         });
+    // })
     .then(() => {
         console.log('Connection to database established successfully.');
     }).catch(err => {

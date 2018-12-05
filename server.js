@@ -8,7 +8,10 @@ const connection = new Sequelize('db', 'user', 'pass', {
     host: 'localhost',
     dialect: 'sqlite',
     storage: 'db.sqlite',
-    operatorsAliases: false
+    operatorsAliases: false,
+    define: {
+        freezeTableName: true
+    }
 });
 
 const User = connection.define('User', {
@@ -19,6 +22,8 @@ const User = connection.define('User', {
     },
     name: Sequelize.STRING,
     bio: Sequelize.TEXT
+}, {
+    timestamps: false
 });
 
 connection

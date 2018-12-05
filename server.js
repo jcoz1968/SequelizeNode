@@ -42,6 +42,37 @@ app.get('/findone', (req, res) => {
     });
 });
 
+app.delete('/remove', (req, res) => {
+    User.destroy({
+        where: {
+            id: '50'
+        }
+    }).then(() => {
+        res.send('User successfully deleted.');
+    })
+    .catch(error => {
+        console.log('Error caught', error);
+        res.status(404).send(error);
+    });
+});
+
+app.put('/update', (req, res) => {
+    User.update({
+        name: 'Michael Keaton',
+        password: 'password'
+    }, { 
+        where: { 
+            id: '44' 
+        }
+    }).then(rows => {
+        res.json(rows);
+    })
+    .catch(error => {
+        console.log('Error caught', error);
+        res.status(404).send(error);
+    });    
+});
+
 app.get('/findall', (req, res) => {
     User.findAll({
         where: {

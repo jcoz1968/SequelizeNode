@@ -32,64 +32,27 @@ const User = connection.define('User', {
     }
 });
 
-app.get('/findone', (req, res) => {
-    User.findById('44').then(user => {
-        res.json(user);
+const Post = connection.define('Post', {
+    id: {
+        primaryKey: true,
+        type: Sequelize.UUID,
+        defaultValue: Sequelize.UUIDV4
+    },
+    title: Sequelize.STRING,
+    content: Sequelize.TEXT
+});
+
+app.get('/allposts', (req, res) => {
+    Post.findAll({
+        include: [User]
+    }).then(posts => {
+        res.json(posts);
     })
     .catch(error => {
         console.log('Error caught', error);
         res.status(404).send(error);
     });
 });
-
-app.delete('/remove', (req, res) => {
-    User.destroy({
-        where: {
-            id: '50'
-        }
-    }).then(() => {
-        res.send('User successfully deleted.');
-    })
-    .catch(error => {
-        console.log('Error caught', error);
-        res.status(404).send(error);
-    });
-});
-
-app.put('/update', (req, res) => {
-    User.update({
-        name: 'Michael Keaton',
-        password: 'password'
-    }, { 
-        where: { 
-            id: '44' 
-        }
-    }).then(rows => {
-        res.json(rows);
-    })
-    .catch(error => {
-        console.log('Error caught', error);
-        res.status(404).send(error);
-    });    
-});
-
-app.get('/findall', (req, res) => {
-    User.findAll({
-        where: {
-            name: {
-                [Op.like]: 'P%'
-            }
-        }
-    }).then(user => {
-        res.json(user);
-    })
-    .catch(error => {
-        console.log('Error caught', error);
-        res.status(404).send(error);
-    });
-});
-
-
 
 app.post('/post',(req, res) => {
     const newUser = req.body.user;
@@ -106,10 +69,12 @@ app.post('/post',(req, res) => {
     });
 });
 
+Post.belongsTo(User, { foreignKey: 'userId' }); // puts foreign key in UserId in Post Table
+
 connection
     .sync({
         // logging: console.log,
-        // force: true
+        force: true
     })
     // .then(() => {
     //     User.bulkCreate(_USERS)
@@ -120,6 +85,13 @@ connection
     //             console.log(err);
     //         });
     // })
+    .then(() => {
+        Post.create({
+            UserId: 1,
+            title: 'First post',
+            content: 'post content 1'
+        })
+    })
     .then(() => {
         console.log('Connection to database established successfully.');
     }).catch(err => {

@@ -32,6 +32,16 @@ const User = connection.define('User', {
     }
 });
 
+app.get('/findone', (req, res) => {
+    User.findById('44').then(user => {
+        res.json(user);
+    })
+    .catch(error => {
+        console.log('Error caught', error);
+        res.status(404).send(error);
+    });
+});
+
 app.get('/findall', (req, res) => {
     User.findAll({
         where: {

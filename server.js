@@ -20,29 +20,32 @@ const User = connection.define('User', {
         primaryKey: true,
         defaultValue: Sequelize.UUIDV4
     },
-    name: { 
-        type: Sequelize.STRING,
-        validate: {
-            len: [3]
-        }
-
-    },
-    bio: { 
-        type: Sequelize.TEXT,
-        validate: {
-            contains: {
-                args: ['foo'],
-                msg: 'Error: Field must contain foo'
-            }
-        }
-    }
+    first: Sequelize.STRING,
+    last: Sequelize.STRING,
+    full_name: Sequelize.STRING,
+    bio: Sequelize.TEXT
 }, {
-    timestamps: false
+    hooks: {
+        beforeValidate() {
+            console.log('before validate');
+        },
+        afterValidate() {
+            console.log('after validate');
+        },
+        beforeCreate(user) {
+            console.log('before create');
+            user.full_name = `${user.first} ${user.last}`;
+        },
+        afterCreate() {
+            console.log('after create');
+        },
+    }
 });
 
 app.get('/',(req, res) => {
     User.create({
-        name: 'Br',
+        first: 'Coz',
+        last: 'Cosby',
         bio: 'New bio entry 3'
     })
     .then(user => {
@@ -60,10 +63,11 @@ connection
         force: true
     })
     .then(() => {
-        // User.create({
-        //     name: 'Coz',
-        //     bio: 'New bio entry'
-        // });
+        User.create({
+            first: 'Brenna',
+            last: 'Cosby',
+            bio: 'New bio entry'
+        });
     })
     .then(() => {
         console.log('Connection to database established successfully.');

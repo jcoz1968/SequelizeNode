@@ -11,10 +11,31 @@ const connection = new Sequelize('db', 'user', 'pass', {
     operatorsAliases: false
 });
 
-connection.authenticate().then(() => {
-    console.log('Connection to database established successfully.');
-}).catch(err => {
-    console.log('Unable to connect to the database', err);
+const User = connection.define('User', {
+    uuid: {
+        type: Sequelize.UUID,
+        primaryKey: true,
+        defaultValue: Sequelize.UUIDV4
+    },
+    name: Sequelize.STRING,
+    bio: Sequelize.TEXT
+});
+
+connection
+    .sync({
+        logging: console.log,
+        force: true
+    })
+    .then(() => {
+        User.create({
+            name: 'Coz',
+            bio: 'New bio entry'
+        });
+    })
+    .then(() => {
+        console.log('Connection to database established successfully.');
+    }).catch(err => {
+        console.log('Unable to connect to the database', err);
 });
 
 app.listen(port, () => {

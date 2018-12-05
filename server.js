@@ -1,5 +1,7 @@
 const express = require('express');
 const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
+const _USERS = require('./users.json');
 
 const app = express();
 const port = 8001;
@@ -15,40 +17,87 @@ const connection = new Sequelize('db', 'user', 'pass', {
 });
 
 const User = connection.define('User', {
-    uuid: {
-        type: Sequelize.UUID,
-        primaryKey: true,
-        defaultValue: Sequelize.UUIDV4
+    name: Sequelize.STRING,
+    email: {
+        type: Sequelize.STRING,
+        validate: {
+            isEmail: true
+        }
     },
-    first: Sequelize.STRING,
-    last: Sequelize.STRING,
-    full_name: Sequelize.STRING,
-    bio: Sequelize.TEXT
-}, {
-    hooks: {
-        beforeValidate() {
-            console.log('before validate');
-        },
-        afterValidate() {
-            console.log('after validate');
-        },
-        beforeCreate(user) {
-            console.log('before create');
-            user.full_name = `${user.first} ${user.last}`;
-        },
-        afterCreate() {
-            console.log('after create');
-        },
+    password: {
+        type: Sequelize.STRING,
+        validate: {
+            isAlphanumeric: true
+        }
     }
 });
 
-app.get('/',(req, res) => {
-    User.create({
-        first: 'Coz',
-        last: 'Cosby',
-        bio: 'New bio entry 3'
+app.get('/findone', (req, res) => {
+    User.findById('44').then(user => {
+        res.json(user);
     })
-    .then(user => {
+    .catch(error => {
+        console.log('Error caught', error);
+        res.status(404).send(error);
+    });
+});
+
+app.delete('/remove', (req, res) => {
+    User.destroy({
+        where: {
+            id: '50'
+        }
+    }).then(() => {
+        res.send('User successfully deleted.');
+    })
+    .catch(error => {
+        console.log('Error caught', error);
+        res.status(404).send(error);
+    });
+});
+
+app.put('/update', (req, res) => {
+    User.update({
+        name: 'Michael Keaton',
+        password: 'password'
+    }, { 
+        where: { 
+            id: '44' 
+        }
+    }).then(rows => {
+        res.json(rows);
+    })
+    .catch(error => {
+        console.log('Error caught', error);
+        res.status(404).send(error);
+    });    
+});
+
+app.get('/findall', (req, res) => {
+    User.findAll({
+        where: {
+            name: {
+                [Op.like]: 'P%'
+            }
+        }
+    }).then(user => {
+        res.json(user);
+    })
+    .catch(error => {
+        console.log('Error caught', error);
+        res.status(404).send(error);
+    });
+});
+
+
+
+app.post('/post',(req, res) => {
+    const newUser = req.body.user;
+    User.create({
+        name: newUser.name,
+        email: newuser.email,
+    })
+    .then((user) => {
         res.json(user);
     })
     .catch(error => {
@@ -59,16 +108,18 @@ app.get('/',(req, res) => {
 
 connection
     .sync({
-        logging: console.log,
-        force: true
+        // logging: console.log,
+        // force: true
     })
-    .then(() => {
-        User.create({
-            first: 'Brenna',
-            last: 'Cosby',
-            bio: 'New bio entry'
-        });
-    })
+    // .then(() => {
+    //     User.bulkCreate(_USERS)
+    //         .then(users => {
+    //             console.log('Successfully added users.')
+    //         })
+    //         .catch(err => {
+    //             console.log(err);
+    //         });
+    // })
     .then(() => {
         console.log('Connection to database established successfully.');
     }).catch(err => {
